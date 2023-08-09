@@ -45,21 +45,34 @@ class ViewController: UIViewController, ARSCNViewDelegate {
        
         guard let touchLocation = touches.first?.location(in: sceneView) else {return}
             
-        guard let query = sceneView.raycastQuery(from: touchLocation, allowing: .existingPlaneGeometry, alignment: .any) else {return}
+        guard let query = sceneView.raycastQuery(from: touchLocation, allowing: .estimatedPlane, alignment: .any) else {return}
         
-        let results = sceneView.session.raycast(query)
-        
-        if let hitResult = results.first {
+        guard let result = sceneView.session.raycast(query).first else {return}
            
-            addDot(at: hitResult)
-                
-        }
+        addDot(at: result)
+            
     }
     
-    func addDot(at hitResult: ARRaycastResult) {
+    func addDot(at location: ARRaycastResult) {
         
+       let dotGeometry = SCNSphere(radius: 0.005)
+        
+       let material = SCNMaterial()
+        
+        material.diffuse.contents = UIColor.red
+        
+        dotGeometry.materials = [material]
+        
+        let dotNode = SCNNode(geometry: dotGeometry)
+        
+        dotNode.position = SCNVector3(
+            x: location.worldTransform.columns.3.x,
+            y: location.worldTransform.columns.3.y,
+            z: location.worldTransform.columns.3.z)
+        
+        sceneView.scene.rootNode.addChildNode(dotNode)
+      
     }
 
 }
-
 
